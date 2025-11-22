@@ -11,11 +11,15 @@ export const configureSession = () => {
     secret: config.session.secret,
     resave: config.session.resave,
     saveUninitialized: config.session.saveUninitialized,
+    cookie: {
+      maxAge: config.session.cookie.maxAge,
+    },
   };
 
   if (config.server.env !== 'development') {
     sessionOptions.proxy = true;
     sessionOptions.cookie = {
+      ...sessionOptions.cookie,
       sameSite: 'none',
       secure: true,
       domain: config.server.url,
