@@ -8,7 +8,7 @@ import EnrollmentsDao from '../enrollments/dao.js';
 
 export default class CoursesController {
   constructor(db) {
-    this.dao = CoursesDao(db);
+    this.dao = new CoursesDao(db);
     this.enrollmentsDao = new EnrollmentsDao(db);
   }
 

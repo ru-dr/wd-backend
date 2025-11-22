@@ -8,7 +8,7 @@ import { validateRequired, isValidEmail, isValidUsername, isValidPassword } from
 
 export default class UsersController {
   constructor(db) {
-    this.dao = UsersDao(db);
+    this.dao = new UsersDao(db);
   }
 
   /**
