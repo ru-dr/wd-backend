@@ -18,7 +18,7 @@ export default class UsersController {
     try {
       const { username, password, email, firstName, lastName } = req.body;
 
-      // Validate required fields
+      
       const { isValid, errors } = validateRequired(
         ['username', 'password', 'email', 'firstName', 'lastName'],
         req.body
@@ -32,7 +32,7 @@ export default class UsersController {
         });
       }
 
-      // Validate username format
+      
       if (!isValidUsername(username)) {
         return res.status(400).json({
           success: false,
@@ -40,7 +40,7 @@ export default class UsersController {
         });
       }
 
-      // Validate email format
+      
       if (!isValidEmail(email)) {
         return res.status(400).json({
           success: false,
@@ -48,7 +48,7 @@ export default class UsersController {
         });
       }
 
-      // Validate password strength
+      
       if (!isValidPassword(password)) {
         return res.status(400).json({
           success: false,
@@ -56,7 +56,7 @@ export default class UsersController {
         });
       }
 
-      // Check if username already exists
+      
       const existingUser = this.dao.findUserByUsername(username);
       if (existingUser) {
         return res.status(400).json({
@@ -65,7 +65,7 @@ export default class UsersController {
         });
       }
 
-      // Check if email already exists
+      
       const existingEmail = this.dao.findUserByEmail(email);
       if (existingEmail) {
         return res.status(400).json({
@@ -74,10 +74,10 @@ export default class UsersController {
         });
       }
 
-      // Create new user
+      
       const newUser = this.dao.createUser(req.body);
       
-      // Store in session
+      
       req.session.currentUser = newUser;
 
       res.status(201).json({
@@ -101,7 +101,7 @@ export default class UsersController {
     try {
       const { username, password } = req.body;
 
-      // Validate required fields
+      
       if (!username || !password) {
         return res.status(400).json({
           success: false,
@@ -109,7 +109,7 @@ export default class UsersController {
         });
       }
 
-      // Find user by credentials
+      
       const user = this.dao.findUserByCredentials(username, password);
 
       if (!user) {
@@ -119,7 +119,7 @@ export default class UsersController {
         });
       }
 
-      // Store in session
+      
       req.session.currentUser = user;
 
       res.json({
@@ -197,7 +197,7 @@ export default class UsersController {
       const { userId } = req.params;
       const updates = req.body;
 
-      // Check if user exists
+      
       const user = this.dao.findUserById(userId);
       if (!user) {
         return res.status(404).json({
@@ -206,10 +206,10 @@ export default class UsersController {
         });
       }
 
-      // Update user
+      
       const updatedUser = this.dao.updateUser(userId, updates);
 
-      // Update session if updating current user
+      
       if (req.session.currentUser && req.session.currentUser._id === userId) {
         req.session.currentUser = updatedUser;
       }
@@ -282,7 +282,7 @@ export default class UsersController {
     try {
       const { userId } = req.params;
 
-      // Check if user exists
+      
       const user = this.dao.findUserById(userId);
       if (!user) {
         return res.status(404).json({

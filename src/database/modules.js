@@ -4,7 +4,6 @@
  */
 
 export default [
-  // CS5010 Modules
   {
     _id: "M101",
     name: "Week 0 - INTRO",
@@ -39,7 +38,6 @@ export default [
     ]
   },
 
-  // CS5610 Modules
   {
     _id: "M201",
     name: "Week 0 - INTRO",
@@ -76,7 +74,6 @@ export default [
     ]
   },
 
-  // CS5800 Modules
   {
     _id: "M301",
     name: "Week 1 - Introduction to Algorithms",
@@ -101,7 +98,6 @@ export default [
     ]
   },
 
-  // CS6140 Modules
   {
     _id: "M401",
     name: "Week 1 - Introduction to ML",

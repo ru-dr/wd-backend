@@ -4,7 +4,6 @@
  */
 
 export default [
-  // CS5010 Assignments
   {
     _id: "A101",
     title: "A1 - Design Recipe Practice",
@@ -48,7 +47,6 @@ export default [
     onlineEntryOptions: ["File Uploads"],
   },
 
-  // CS5610 Assignments
   {
     _id: "A201",
     title: "A1 - HTML and CSS Basics",
@@ -92,7 +90,6 @@ export default [
     onlineEntryOptions: ["Website URL", "File Uploads"],
   },
 
-  // CS5800 Assignments
   {
     _id: "A301",
     title: "Homework 1 - Algorithm Analysis",
@@ -122,7 +119,6 @@ export default [
     onlineEntryOptions: ["File Uploads"],
   },
 
-  // CS6140 Assignments
   {
     _id: "A401",
     title: "Lab 1 - Linear Regression",

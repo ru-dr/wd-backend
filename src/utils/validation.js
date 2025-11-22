@@ -9,12 +9,12 @@ export const isValidEmail = (email) => {
 };
 
 export const isValidPassword = (password) => {
-  // At least 6 characters
+  
   return password && password.length >= 6;
 };
 
 export const isValidUsername = (username) => {
-  // At least 3 characters, alphanumeric and underscore only
+  
   const usernameRegex = /^[a-zA-Z0-9_]{3,}$/;
   return usernameRegex.test(username);
 };

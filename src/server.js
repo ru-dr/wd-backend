@@ -11,10 +11,10 @@ import corsMiddleware from './middleware/cors.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import requestLogger from './middleware/logger.js';
 
-// Database
+
 import db from './database/index.js';
 
-// Route modules
+
 import Lab5Routes from './modules/lab5/index.js';
 import UserRoutes from './modules/users/routes.js';
 import CourseRoutes from './modules/courses/routes.js';
@@ -22,31 +22,31 @@ import ModuleRoutes from './modules/modules/routes.js';
 import AssignmentRoutes from './modules/assignments/routes.js';
 import EnrollmentRoutes from './modules/enrollments/routes.js';
 
-// Initialize Express app
+
 const app = express();
 
-// ============================================
-// Middleware Configuration (ORDER MATTERS!)
-// ============================================
 
-// 1. Request logging
+
+
+
+
 app.use(requestLogger);
 
-// 2. CORS configuration
+
 app.use(corsMiddleware);
 
-// 3. Session configuration
+
 app.use(configureSession());
 
-// 4. Body parsing
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ============================================
-// Routes
-// ============================================
 
-// Health check
+
+
+
+
 app.get('/', (req, res) => {
   res.json({
     success: true,
@@ -64,7 +64,7 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Register route modules
+
 Lab5Routes(app);
 UserRoutes(app, db);
 CourseRoutes(app, db);
@@ -72,19 +72,19 @@ ModuleRoutes(app, db);
 AssignmentRoutes(app, db);
 EnrollmentRoutes(app, db);
 
-// ============================================
-// Error Handling (MUST BE LAST!)
-// ============================================
 
-// 404 handler
+
+
+
+
 app.use(notFoundHandler);
 
-// Global error handler
+
 app.use(errorHandler);
 
-// ============================================
-// Start Server
-// ============================================
+
+
+
 
 const PORT = config.server.port;
 

@@ -13,7 +13,6 @@ export const configureSession = () => {
     saveUninitialized: config.session.saveUninitialized,
   };
 
-  // Production-specific session configuration
   if (config.server.env !== 'development') {
     sessionOptions.proxy = true;
     sessionOptions.cookie = {

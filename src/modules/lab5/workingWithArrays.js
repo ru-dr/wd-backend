@@ -136,9 +136,9 @@ export default function WorkingWithArrays(app) {
     res.json(todos);
   });
 
-  // ============================================
-  // RESTful API methods (POST, PUT, DELETE)
-  // ============================================
+  
+  
+  
 
   /**
    * Create new todo (POST method)

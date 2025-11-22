@@ -16,7 +16,7 @@ export default class EnrollmentsDao {
   enrollUserInCourse(userId, courseId) {
     const { enrollments } = this.db;
     
-    // Check if already enrolled
+    
     const existingEnrollment = enrollments.find(
       (e) => e.user === userId && e.course === courseId
     );

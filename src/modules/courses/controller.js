@@ -38,7 +38,7 @@ export default class CoursesController {
     try {
       let { userId } = req.params;
 
-      // Handle "current" user
+      
       if (userId === 'current') {
         const currentUser = req.session.currentUser;
         if (!currentUser) {
@@ -107,7 +107,7 @@ export default class CoursesController {
 
       const newCourse = this.dao.createCourse(req.body);
 
-      // Enroll the creator in the course
+      
       this.enrollmentsDao.enrollUserInCourse(currentUser._id, newCourse._id);
 
       res.status(201).json({
