@@ -7,7 +7,7 @@ export const config = {
   server: {
     port: process.env.PORT || 4000,
     env: process.env.SERVER_ENV || 'development',
-    url: process.env.SERVER_URL || 'http://localhost:4000',
+    url: process.env.SERVER_URL || 'localhost',
   },
 
   client: {
@@ -15,17 +15,17 @@ export const config = {
   },
 
   session: {
-    secret: process.env.SESSION_SECRET || 'kambaz-secret-key',
+    secret: process.env.SESSION_SECRET || '8fe222800d823063384534f4a4d16a60',
     resave: false,
     saveUninitialized: false,
     cookie: {
-      maxAge: 24 * 60 * 60 * 1000, 
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
     },
   },
 
   cors: {
     credentials: true,
-    origin: true,
+    origin: process.env.CLIENT_URL || 'http://localhost:3000',
   },
 };
 
