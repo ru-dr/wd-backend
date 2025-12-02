@@ -7,23 +7,24 @@ import session from 'express-session';
 import config from './environment.js';
 
 export const configureSession = () => {
+  const isProduction = config.server.env === 'production';
+  
+  console.log(`🔐 Session mode: ${isProduction ? 'PRODUCTION' : 'DEVELOPMENT'}`);
+  
   const sessionOptions = {
     secret: config.session.secret,
-    resave: config.session.resave,
-    saveUninitialized: config.session.saveUninitialized,
+    resave: false,
+    saveUninitialized: false,
     cookie: {
-      maxAge: config.session.cookie.maxAge,
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      httpOnly: true,
+      sameSite: isProduction ? 'none' : 'lax',
+      secure: isProduction, // Only true in production (HTTPS)
     },
   };
 
-  if (config.server.env !== 'development') {
+  if (isProduction) {
     sessionOptions.proxy = true;
-    sessionOptions.cookie = {
-      ...sessionOptions.cookie,
-      sameSite: 'none',
-      secure: true,
-      domain: config.server.url,
-    };
   }
 
   return session(sessionOptions);
