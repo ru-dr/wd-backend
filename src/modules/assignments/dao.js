@@ -1,77 +1,72 @@
 /**
  * Assignments DAO (Data Access Object)
- * Handles all database operations for assignments
+ * Handles all MongoDB operations for assignments
  */
 
-import { v4 as uuidv4 } from 'uuid';
+import Assignment from '../../models/Assignment.js';
 
 export default class AssignmentsDao {
-  constructor(db) {
-    this.db = db;
-  }
-
   /**
    * Find all assignments for a specific course
    */
-  findAssignmentsForCourse(courseId) {
-    const { assignments } = this.db;
-    return assignments.filter((assignment) => assignment.course === courseId);
+  async findAssignmentsForCourse(courseId) {
+    const assignments = await Assignment.find({ course: courseId });
+    return assignments.map(assignment => this.formatAssignment(assignment));
   }
 
   /**
    * Find a specific assignment by ID
    */
-  findAssignmentById(assignmentId) {
-    const { assignments } = this.db;
-    return assignments.find((assignment) => assignment._id === assignmentId);
+  async findAssignmentById(assignmentId) {
+    const assignment = await Assignment.findById(assignmentId);
+    return assignment ? this.formatAssignment(assignment) : null;
   }
 
   /**
    * Create a new assignment for a course
    */
-  createAssignment(assignment) {
-    const newAssignment = {
-      ...assignment,
-      _id: uuidv4(),
-    };
-    this.db.assignments = [...this.db.assignments, newAssignment];
-    return newAssignment;
+  async createAssignment(assignmentData) {
+    const newAssignment = new Assignment(assignmentData);
+    const savedAssignment = await newAssignment.save();
+    return this.formatAssignment(savedAssignment);
   }
 
   /**
    * Update an existing assignment
    */
-  updateAssignment(assignmentId, assignmentUpdates) {
-    const { assignments } = this.db;
-    const assignment = assignments.find((a) => a._id === assignmentId);
-    
-    if (!assignment) {
-      return null;
-    }
-
-    Object.assign(assignment, assignmentUpdates);
-    return assignment;
+  async updateAssignment(assignmentId, assignmentUpdates) {
+    const assignment = await Assignment.findByIdAndUpdate(
+      assignmentId,
+      { $set: assignmentUpdates },
+      { new: true }
+    );
+    return assignment ? this.formatAssignment(assignment) : null;
   }
 
   /**
    * Delete an assignment
    */
-  deleteAssignment(assignmentId) {
-    const { assignments } = this.db;
-    const assignmentIndex = assignments.findIndex((a) => a._id === assignmentId);
-    
-    if (assignmentIndex === -1) {
-      return false;
-    }
-
-    this.db.assignments = assignments.filter((a) => a._id !== assignmentId);
-    return true;
+  async deleteAssignment(assignmentId) {
+    const result = await Assignment.findByIdAndDelete(assignmentId);
+    return result !== null;
   }
 
   /**
    * Find all assignments
    */
-  findAllAssignments() {
-    return this.db.assignments;
+  async findAllAssignments() {
+    const assignments = await Assignment.find({});
+    return assignments.map(assignment => this.formatAssignment(assignment));
+  }
+
+  /**
+   * Format assignment document to include _id as string
+   */
+  formatAssignment(assignment) {
+    const assignmentObj = assignment.toObject();
+    return {
+      ...assignmentObj,
+      _id: assignmentObj._id.toString(),
+    };
   }
 }

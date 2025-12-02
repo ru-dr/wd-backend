@@ -7,8 +7,8 @@ import UsersDao from './dao.js';
 import { validateRequired, isValidEmail, isValidUsername, isValidPassword } from '../../utils/validation.js';
 
 export default class UsersController {
-  constructor(db) {
-    this.dao = new UsersDao(db);
+  constructor() {
+    this.dao = new UsersDao();
   }
 
   /**
@@ -18,7 +18,7 @@ export default class UsersController {
     try {
       const { username, password, email, firstName, lastName } = req.body;
 
-      
+      // Validate required fields
       const { isValid, errors } = validateRequired(
         ['username', 'password', 'email', 'firstName', 'lastName'],
         req.body
@@ -32,7 +32,7 @@ export default class UsersController {
         });
       }
 
-      
+      // Validate username format
       if (!isValidUsername(username)) {
         return res.status(400).json({
           success: false,
@@ -40,7 +40,7 @@ export default class UsersController {
         });
       }
 
-      
+      // Validate email format
       if (!isValidEmail(email)) {
         return res.status(400).json({
           success: false,
@@ -48,7 +48,7 @@ export default class UsersController {
         });
       }
 
-      
+      // Validate password strength
       if (!isValidPassword(password)) {
         return res.status(400).json({
           success: false,
@@ -56,8 +56,8 @@ export default class UsersController {
         });
       }
 
-      
-      const existingUser = this.dao.findUserByUsername(username);
+      // Check if username already exists
+      const existingUser = await this.dao.findUserByUsername(username);
       if (existingUser) {
         return res.status(400).json({
           success: false,
@@ -65,8 +65,8 @@ export default class UsersController {
         });
       }
 
-      
-      const existingEmail = this.dao.findUserByEmail(email);
+      // Check if email already exists
+      const existingEmail = await this.dao.findUserByEmail(email);
       if (existingEmail) {
         return res.status(400).json({
           success: false,
@@ -74,10 +74,10 @@ export default class UsersController {
         });
       }
 
+      // Create user
+      const newUser = await this.dao.createUser(req.body);
       
-      const newUser = this.dao.createUser(req.body);
-      
-      
+      // Set session
       req.session.currentUser = newUser;
 
       res.status(201).json({
@@ -101,7 +101,7 @@ export default class UsersController {
     try {
       const { username, password } = req.body;
 
-      
+      // Validate input
       if (!username || !password) {
         return res.status(400).json({
           success: false,
@@ -109,8 +109,8 @@ export default class UsersController {
         });
       }
 
-      
-      const user = this.dao.findUserByCredentials(username, password);
+      // Find user by credentials
+      const user = await this.dao.findUserByCredentials(username, password);
 
       if (!user) {
         return res.status(401).json({
@@ -119,7 +119,7 @@ export default class UsersController {
         });
       }
 
-      
+      // Set session
       req.session.currentUser = user;
 
       res.json({
@@ -197,8 +197,8 @@ export default class UsersController {
       const { userId } = req.params;
       const updates = req.body;
 
-      
-      const user = this.dao.findUserById(userId);
+      // Check if user exists
+      const user = await this.dao.findUserById(userId);
       if (!user) {
         return res.status(404).json({
           success: false,
@@ -206,10 +206,10 @@ export default class UsersController {
         });
       }
 
-      
-      const updatedUser = this.dao.updateUser(userId, updates);
+      // Update user
+      const updatedUser = await this.dao.updateUser(userId, updates);
 
-      
+      // Update session if it's the current user
       if (req.session.currentUser && req.session.currentUser._id === userId) {
         req.session.currentUser = updatedUser;
       }
@@ -233,7 +233,7 @@ export default class UsersController {
    */
   findAllUsers = async (req, res) => {
     try {
-      const users = this.dao.findAllUsers();
+      const users = await this.dao.findAllUsers();
       res.json({
         success: true,
         data: users,
@@ -253,7 +253,7 @@ export default class UsersController {
   findUserById = async (req, res) => {
     try {
       const { userId } = req.params;
-      const user = this.dao.findUserById(userId);
+      const user = await this.dao.findUserById(userId);
 
       if (!user) {
         return res.status(404).json({
@@ -282,8 +282,7 @@ export default class UsersController {
     try {
       const { userId } = req.params;
 
-      
-      const user = this.dao.findUserById(userId);
+      const user = await this.dao.findUserById(userId);
       if (!user) {
         return res.status(404).json({
           success: false,
@@ -291,7 +290,7 @@ export default class UsersController {
         });
       }
 
-      this.dao.deleteUser(userId);
+      await this.dao.deleteUser(userId);
 
       res.json({
         success: true,
@@ -302,6 +301,27 @@ export default class UsersController {
       res.status(500).json({
         success: false,
         message: 'Error deleting user',
+      });
+    }
+  };
+
+  /**
+   * Create a new user (admin - without logging in)
+   */
+  createUser = async (req, res) => {
+    try {
+      const newUser = await this.dao.createUser(req.body);
+
+      res.status(201).json({
+        success: true,
+        message: 'User created successfully',
+        data: newUser,
+      });
+    } catch (error) {
+      console.error('Create user error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error creating user',
       });
     }
   };

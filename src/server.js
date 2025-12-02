@@ -10,9 +10,12 @@ import { configureSession } from './config/session.js';
 import corsMiddleware from './middleware/cors.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import requestLogger from './middleware/logger.js';
-
+import connectDB from './config/database.js';
 
 import db from './database/index.js';
+
+// Connect to MongoDB
+connectDB();
 
 
 import Lab5Routes from './modules/lab5/index.js';

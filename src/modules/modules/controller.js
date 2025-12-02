@@ -6,20 +6,21 @@
 import ModulesDao from './dao.js';
 
 export default class ModulesController {
-  constructor(db) {
-    this.dao = new ModulesDao(db);
+  constructor() {
+    this.dao = new ModulesDao();
   }
 
   /**
    * Find all modules for a specific course
    * GET /api/courses/:courseId/modules
    */
-  findModulesForCourse = (req, res) => {
+  findModulesForCourse = async (req, res) => {
     try {
       const { courseId } = req.params;
-      const modules = this.dao.findModulesForCourse(courseId);
+      const modules = await this.dao.findModulesForCourse(courseId);
       res.json(modules);
     } catch (error) {
+      console.error('Find modules error:', error);
       res.status(500).json({
         success: false,
         message: 'Error retrieving modules',
@@ -32,10 +33,10 @@ export default class ModulesController {
    * Find a specific module by ID
    * GET /api/modules/:moduleId
    */
-  findModuleById = (req, res) => {
+  findModuleById = async (req, res) => {
     try {
       const { moduleId } = req.params;
-      const module = this.dao.findModuleById(moduleId);
+      const module = await this.dao.findModuleById(moduleId);
 
       if (!module) {
         return res.status(404).json({
@@ -46,6 +47,7 @@ export default class ModulesController {
 
       res.json(module);
     } catch (error) {
+      console.error('Find module error:', error);
       res.status(500).json({
         success: false,
         message: 'Error retrieving module',
@@ -58,7 +60,7 @@ export default class ModulesController {
    * Create a new module for a course
    * POST /api/courses/:courseId/modules
    */
-  createModuleForCourse = (req, res) => {
+  createModuleForCourse = async (req, res) => {
     try {
       const { courseId } = req.params;
       const moduleData = {
@@ -66,9 +68,10 @@ export default class ModulesController {
         course: courseId,
       };
 
-      const newModule = this.dao.createModule(moduleData);
+      const newModule = await this.dao.createModule(moduleData);
       res.status(201).json(newModule);
     } catch (error) {
+      console.error('Create module error:', error);
       res.status(500).json({
         success: false,
         message: 'Error creating module',
@@ -81,12 +84,12 @@ export default class ModulesController {
    * Update an existing module
    * PUT /api/modules/:moduleId
    */
-  updateModule = (req, res) => {
+  updateModule = async (req, res) => {
     try {
       const { moduleId } = req.params;
       const moduleUpdates = req.body;
 
-      const updatedModule = this.dao.updateModule(moduleId, moduleUpdates);
+      const updatedModule = await this.dao.updateModule(moduleId, moduleUpdates);
 
       if (!updatedModule) {
         return res.status(404).json({
@@ -97,6 +100,7 @@ export default class ModulesController {
 
       res.json(updatedModule);
     } catch (error) {
+      console.error('Update module error:', error);
       res.status(500).json({
         success: false,
         message: 'Error updating module',
@@ -109,10 +113,10 @@ export default class ModulesController {
    * Delete a module
    * DELETE /api/modules/:moduleId
    */
-  deleteModule = (req, res) => {
+  deleteModule = async (req, res) => {
     try {
       const { moduleId } = req.params;
-      const deleted = this.dao.deleteModule(moduleId);
+      const deleted = await this.dao.deleteModule(moduleId);
 
       if (!deleted) {
         return res.status(404).json({
@@ -123,6 +127,7 @@ export default class ModulesController {
 
       res.sendStatus(200);
     } catch (error) {
+      console.error('Delete module error:', error);
       res.status(500).json({
         success: false,
         message: 'Error deleting module',
@@ -135,11 +140,12 @@ export default class ModulesController {
    * Find all modules (optional - for admin)
    * GET /api/modules
    */
-  findAllModules = (req, res) => {
+  findAllModules = async (req, res) => {
     try {
-      const modules = this.dao.findAllModules();
+      const modules = await this.dao.findAllModules();
       res.json(modules);
     } catch (error) {
+      console.error('Find all modules error:', error);
       res.status(500).json({
         success: false,
         message: 'Error retrieving modules',

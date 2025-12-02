@@ -1,74 +1,81 @@
 /**
  * Courses Data Access Object (DAO)
- * Handles all database operations for courses
+ * Handles all MongoDB operations for courses
  */
 
-import { v4 as uuidv4 } from 'uuid';
+import Course from '../../models/Course.js';
+import Enrollment from '../../models/Enrollment.js';
 
 export default class CoursesDao {
-  constructor(db) {
-    this.db = db;
-  }
-
   /**
    * Find all courses
    */
-  findAllCourses() {
-    return this.db.courses;
+  async findAllCourses() {
+    const courses = await Course.find({});
+    return courses.map(course => this.formatCourse(course));
   }
 
   /**
    * Find courses for enrolled user
    */
-  findCoursesForEnrolledUser(userId) {
-    const { courses, enrollments } = this.db;
-    const enrolledCourses = courses.filter((course) =>
-      enrollments.some(
-        (enrollment) =>
-          enrollment.user === userId && enrollment.course === course._id
-      )
-    );
-    return enrolledCourses;
+  async findCoursesForEnrolledUser(userId) {
+    const enrollments = await Enrollment.find({ user: userId });
+    const courseIds = enrollments.map(e => e.course);
+    const courses = await Course.find({ _id: { $in: courseIds } });
+    return courses.map(course => this.formatCourse(course));
   }
 
   /**
    * Find course by ID
    */
-  findCourseById(courseId) {
-    return this.db.courses.find((course) => course._id === courseId);
+  async findCourseById(courseId) {
+    const course = await Course.findById(courseId);
+    return course ? this.formatCourse(course) : null;
   }
 
   /**
    * Create a new course
    */
-  createCourse(course) {
-    const newCourse = {
-      ...course,
-      _id: uuidv4(),
-      startDate: course.startDate || new Date().toISOString().split('T')[0],
-      credits: course.credits || 4,
-    };
-    this.db.courses = [...this.db.courses, newCourse];
-    return newCourse;
+  async createCourse(courseData) {
+    const newCourse = new Course({
+      ...courseData,
+      startDate: courseData.startDate || new Date().toISOString().split('T')[0],
+      credits: courseData.credits || 4,
+    });
+    const savedCourse = await newCourse.save();
+    return this.formatCourse(savedCourse);
   }
 
   /**
    * Update course
    */
-  updateCourse(courseId, courseUpdates) {
-    const course = this.db.courses.find((c) => c._id === courseId);
-    if (course) {
-      Object.assign(course, courseUpdates);
-    }
-    return course;
+  async updateCourse(courseId, courseUpdates) {
+    const course = await Course.findByIdAndUpdate(
+      courseId,
+      { $set: courseUpdates },
+      { new: true }
+    );
+    return course ? this.formatCourse(course) : null;
   }
 
   /**
    * Delete course
    */
-  deleteCourse(courseId) {
-    this.db.courses = this.db.courses.filter((course) => course._id !== courseId);
-    this.db.enrollments = this.db.enrollments.filter((enrollment) => enrollment.course !== courseId);
+  async deleteCourse(courseId) {
+    await Course.findByIdAndDelete(courseId);
+    // Also delete related enrollments
+    await Enrollment.deleteMany({ course: courseId });
     return { success: true, message: 'Course deleted successfully' };
+  }
+
+  /**
+   * Format course document to include _id as string
+   */
+  formatCourse(course) {
+    const courseObj = course.toObject();
+    return {
+      ...courseObj,
+      _id: courseObj._id.toString(),
+    };
   }
 }

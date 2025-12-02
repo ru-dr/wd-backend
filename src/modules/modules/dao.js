@@ -1,77 +1,76 @@
 /**
  * Modules DAO (Data Access Object)
- * Handles all database operations for course modules
+ * Handles all MongoDB operations for course modules
  */
 
-import { v4 as uuidv4 } from 'uuid';
+import Module from '../../models/Module.js';
 
 export default class ModulesDao {
-  constructor(db) {
-    this.db = db;
-  }
-
   /**
    * Find all modules for a specific course
    */
-  findModulesForCourse(courseId) {
-    const { modules } = this.db;
-    return modules.filter((module) => module.course === courseId);
+  async findModulesForCourse(courseId) {
+    const modules = await Module.find({ course: courseId });
+    return modules.map(module => this.formatModule(module));
   }
 
   /**
    * Find a specific module by ID
    */
-  findModuleById(moduleId) {
-    const { modules } = this.db;
-    return modules.find((module) => module._id === moduleId);
+  async findModuleById(moduleId) {
+    const module = await Module.findById(moduleId);
+    return module ? this.formatModule(module) : null;
   }
 
   /**
    * Create a new module for a course
    */
-  createModule(module) {
-    const newModule = {
-      ...module,
-      _id: uuidv4(),
-    };
-    this.db.modules = [...this.db.modules, newModule];
-    return newModule;
+  async createModule(moduleData) {
+    const newModule = new Module(moduleData);
+    const savedModule = await newModule.save();
+    return this.formatModule(savedModule);
   }
 
   /**
    * Update an existing module
    */
-  updateModule(moduleId, moduleUpdates) {
-    const { modules } = this.db;
-    const module = modules.find((m) => m._id === moduleId);
-    
-    if (!module) {
-      return null;
-    }
-
-    Object.assign(module, moduleUpdates);
-    return module;
+  async updateModule(moduleId, moduleUpdates) {
+    const module = await Module.findByIdAndUpdate(
+      moduleId,
+      { $set: moduleUpdates },
+      { new: true }
+    );
+    return module ? this.formatModule(module) : null;
   }
 
   /**
    * Delete a module
    */
-  deleteModule(moduleId) {
-    const { modules } = this.db;
-    const moduleIndex = modules.findIndex((m) => m._id === moduleId);
-    
-    if (moduleIndex === -1) {
-      return false;
-    }
-
-    this.db.modules = modules.filter((m) => m._id !== moduleId);
-    return true;
+  async deleteModule(moduleId) {
+    const result = await Module.findByIdAndDelete(moduleId);
+    return result !== null;
   }
 
   /**
    * Find all modules
    */
-  findAllModules() {
-    return this.db.modules;
+  async findAllModules() {
+    const modules = await Module.find({});
+    return modules.map(module => this.formatModule(module));
+  }
+
+  /**
+   * Format module document to include _id as string
+   */
+  formatModule(module) {
+    const moduleObj = module.toObject();
+    return {
+      ...moduleObj,
+      _id: moduleObj._id.toString(),
+      lessons: moduleObj.lessons?.map(lesson => ({
+        ...lesson,
+        _id: lesson._id?.toString(),
+      })) || [],
+    };
   }
 }

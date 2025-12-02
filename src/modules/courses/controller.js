@@ -7,9 +7,9 @@ import CoursesDao from './dao.js';
 import EnrollmentsDao from '../enrollments/dao.js';
 
 export default class CoursesController {
-  constructor(db) {
-    this.dao = new CoursesDao(db);
-    this.enrollmentsDao = new EnrollmentsDao(db);
+  constructor() {
+    this.dao = new CoursesDao();
+    this.enrollmentsDao = new EnrollmentsDao();
   }
 
   /**
@@ -17,7 +17,7 @@ export default class CoursesController {
    */
   findAllCourses = async (req, res) => {
     try {
-      const courses = this.dao.findAllCourses();
+      const courses = await this.dao.findAllCourses();
       res.json({
         success: true,
         data: courses,
@@ -38,7 +38,7 @@ export default class CoursesController {
     try {
       let { userId } = req.params;
 
-      
+      // Handle 'current' as userId
       if (userId === 'current') {
         const currentUser = req.session.currentUser;
         if (!currentUser) {
@@ -50,7 +50,7 @@ export default class CoursesController {
         userId = currentUser._id;
       }
 
-      const courses = this.dao.findCoursesForEnrolledUser(userId);
+      const courses = await this.dao.findCoursesForEnrolledUser(userId);
       res.json({
         success: true,
         data: courses,
@@ -70,7 +70,7 @@ export default class CoursesController {
   findCourseById = async (req, res) => {
     try {
       const { courseId } = req.params;
-      const course = this.dao.findCourseById(courseId);
+      const course = await this.dao.findCourseById(courseId);
 
       if (!course) {
         return res.status(404).json({
@@ -105,10 +105,10 @@ export default class CoursesController {
         });
       }
 
-      const newCourse = this.dao.createCourse(req.body);
+      const newCourse = await this.dao.createCourse(req.body);
 
-      
-      this.enrollmentsDao.enrollUserInCourse(currentUser._id, newCourse._id);
+      // Auto-enroll the creator in the course
+      await this.enrollmentsDao.enrollUserInCourse(currentUser._id, newCourse._id);
 
       res.status(201).json({
         success: true,
@@ -130,7 +130,7 @@ export default class CoursesController {
   updateCourse = async (req, res) => {
     try {
       const { courseId } = req.params;
-      const course = this.dao.findCourseById(courseId);
+      const course = await this.dao.findCourseById(courseId);
 
       if (!course) {
         return res.status(404).json({
@@ -139,7 +139,7 @@ export default class CoursesController {
         });
       }
 
-      const updatedCourse = this.dao.updateCourse(courseId, req.body);
+      const updatedCourse = await this.dao.updateCourse(courseId, req.body);
 
       res.json({
         success: true,
@@ -161,7 +161,7 @@ export default class CoursesController {
   deleteCourse = async (req, res) => {
     try {
       const { courseId } = req.params;
-      const course = this.dao.findCourseById(courseId);
+      const course = await this.dao.findCourseById(courseId);
 
       if (!course) {
         return res.status(404).json({
@@ -170,7 +170,7 @@ export default class CoursesController {
         });
       }
 
-      this.dao.deleteCourse(courseId);
+      await this.dao.deleteCourse(courseId);
 
       res.json({
         success: true,

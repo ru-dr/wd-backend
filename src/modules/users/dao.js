@@ -1,89 +1,100 @@
 /**
  * Users Data Access Object (DAO)
- * Handles all database operations for users
+ * Handles all MongoDB operations for users
  */
 
-import { v4 as uuidv4 } from 'uuid';
+import User from '../../models/User.js';
 
 export default class UsersDao {
-  constructor(db) {
-    this.db = db;
-  }
-
   /**
    * Create a new user
    */
-  createUser(user) {
-    const newUser = {
-      ...user,
-      _id: uuidv4(),
-      role: user.role || 'STUDENT',
+  async createUser(userData) {
+    const newUser = new User({
+      ...userData,
       lastActivity: new Date().toISOString().split('T')[0],
       totalActivity: '00:00:00',
-    };
-    this.db.users = [...this.db.users, newUser];
-    return newUser;
+    });
+    const savedUser = await newUser.save();
+    return this.formatUser(savedUser);
   }
 
   /**
    * Find all users
    */
-  findAllUsers() {
-    return this.db.users;
+  async findAllUsers() {
+    const users = await User.find({});
+    return users.map(user => this.formatUser(user));
   }
 
   /**
    * Find user by ID
    */
-  findUserById(userId) {
-    return this.db.users.find((user) => user._id === userId);
+  async findUserById(userId) {
+    const user = await User.findById(userId);
+    return user ? this.formatUser(user) : null;
   }
 
   /**
    * Find user by username
    */
-  findUserByUsername(username) {
-    return this.db.users.find((user) => user.username === username);
+  async findUserByUsername(username) {
+    const user = await User.findOne({ username });
+    return user ? this.formatUser(user) : null;
   }
 
   /**
    * Find user by email
    */
-  findUserByEmail(email) {
-    return this.db.users.find((user) => user.email === email);
+  async findUserByEmail(email) {
+    const user = await User.findOne({ email });
+    return user ? this.formatUser(user) : null;
   }
 
   /**
    * Find user by credentials (username and password)
    */
-  findUserByCredentials(username, password) {
-    return this.db.users.find(
-      (user) => user.username === username && user.password === password
-    );
+  async findUserByCredentials(username, password) {
+    const user = await User.findOne({ username, password });
+    return user ? this.formatUser(user) : null;
   }
 
   /**
    * Update user
    */
-  updateUser(userId, userUpdates) {
-    this.db.users = this.db.users.map((user) => 
-      user._id === userId ? { ...user, ...userUpdates } : user
+  async updateUser(userId, userUpdates) {
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { $set: userUpdates },
+      { new: true }
     );
-    return this.db.users.find((user) => user._id === userId);
+    return user ? this.formatUser(user) : null;
   }
 
   /**
    * Delete user
    */
-  deleteUser(userId) {
-    this.db.users = this.db.users.filter((user) => user._id !== userId);
+  async deleteUser(userId) {
+    await User.findByIdAndDelete(userId);
     return { success: true, message: 'User deleted successfully' };
   }
 
   /**
    * Find users by role
    */
-  findUsersByRole(role) {
-    return this.db.users.filter((user) => user.role === role);
+  async findUsersByRole(role) {
+    const users = await User.find({ role });
+    return users.map(user => this.formatUser(user));
+  }
+
+  /**
+   * Format user document to include _id as string
+   */
+  formatUser(user) {
+    const userObj = user.toObject();
+    return {
+      ...userObj,
+      _id: userObj._id.toString(),
+    };
   }
 }

@@ -6,20 +6,21 @@
 import AssignmentsDao from './dao.js';
 
 export default class AssignmentsController {
-  constructor(db) {
-    this.dao = new AssignmentsDao(db);
+  constructor() {
+    this.dao = new AssignmentsDao();
   }
 
   /**
    * Find all assignments for a specific course
    * GET /api/courses/:courseId/assignments
    */
-  findAssignmentsForCourse = (req, res) => {
+  findAssignmentsForCourse = async (req, res) => {
     try {
       const { courseId } = req.params;
-      const assignments = this.dao.findAssignmentsForCourse(courseId);
+      const assignments = await this.dao.findAssignmentsForCourse(courseId);
       res.json(assignments);
     } catch (error) {
+      console.error('Find assignments error:', error);
       res.status(500).json({
         success: false,
         message: 'Error retrieving assignments',
@@ -32,10 +33,10 @@ export default class AssignmentsController {
    * Find a specific assignment by ID
    * GET /api/assignments/:assignmentId
    */
-  findAssignmentById = (req, res) => {
+  findAssignmentById = async (req, res) => {
     try {
       const { assignmentId } = req.params;
-      const assignment = this.dao.findAssignmentById(assignmentId);
+      const assignment = await this.dao.findAssignmentById(assignmentId);
 
       if (!assignment) {
         return res.status(404).json({
@@ -46,6 +47,7 @@ export default class AssignmentsController {
 
       res.json(assignment);
     } catch (error) {
+      console.error('Find assignment error:', error);
       res.status(500).json({
         success: false,
         message: 'Error retrieving assignment',
@@ -58,7 +60,7 @@ export default class AssignmentsController {
    * Create a new assignment for a course
    * POST /api/courses/:courseId/assignments
    */
-  createAssignmentForCourse = (req, res) => {
+  createAssignmentForCourse = async (req, res) => {
     try {
       const { courseId } = req.params;
       const assignmentData = {
@@ -66,9 +68,10 @@ export default class AssignmentsController {
         course: courseId,
       };
 
-      const newAssignment = this.dao.createAssignment(assignmentData);
+      const newAssignment = await this.dao.createAssignment(assignmentData);
       res.status(201).json(newAssignment);
     } catch (error) {
+      console.error('Create assignment error:', error);
       res.status(500).json({
         success: false,
         message: 'Error creating assignment',
@@ -81,12 +84,12 @@ export default class AssignmentsController {
    * Update an existing assignment
    * PUT /api/assignments/:assignmentId
    */
-  updateAssignment = (req, res) => {
+  updateAssignment = async (req, res) => {
     try {
       const { assignmentId } = req.params;
       const assignmentUpdates = req.body;
 
-      const updatedAssignment = this.dao.updateAssignment(assignmentId, assignmentUpdates);
+      const updatedAssignment = await this.dao.updateAssignment(assignmentId, assignmentUpdates);
 
       if (!updatedAssignment) {
         return res.status(404).json({
@@ -97,6 +100,7 @@ export default class AssignmentsController {
 
       res.json(updatedAssignment);
     } catch (error) {
+      console.error('Update assignment error:', error);
       res.status(500).json({
         success: false,
         message: 'Error updating assignment',
@@ -109,10 +113,10 @@ export default class AssignmentsController {
    * Delete an assignment
    * DELETE /api/assignments/:assignmentId
    */
-  deleteAssignment = (req, res) => {
+  deleteAssignment = async (req, res) => {
     try {
       const { assignmentId } = req.params;
-      const deleted = this.dao.deleteAssignment(assignmentId);
+      const deleted = await this.dao.deleteAssignment(assignmentId);
 
       if (!deleted) {
         return res.status(404).json({
@@ -123,6 +127,7 @@ export default class AssignmentsController {
 
       res.sendStatus(200);
     } catch (error) {
+      console.error('Delete assignment error:', error);
       res.status(500).json({
         success: false,
         message: 'Error deleting assignment',
@@ -135,11 +140,12 @@ export default class AssignmentsController {
    * Find all assignments (optional - for admin)
    * GET /api/assignments
    */
-  findAllAssignments = (req, res) => {
+  findAllAssignments = async (req, res) => {
     try {
-      const assignments = this.dao.findAllAssignments();
+      const assignments = await this.dao.findAllAssignments();
       res.json(assignments);
     } catch (error) {
+      console.error('Find all assignments error:', error);
       res.status(500).json({
         success: false,
         message: 'Error retrieving assignments',
